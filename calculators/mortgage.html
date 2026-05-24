@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mortgage Payment Calculator — Windfall</title>
+  <meta name="description" content="Calculate your Canadian mortgage payment. Supports all payment frequencies, Canadian semi-annual compounding, and full amortization breakdown." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0D1F3C; --navy-deep: #081628; --navy-mid: #162E55;
+      --amber: #E8A030; --amber-light: #FBE8C5; --amber-dim: rgba(232,160,48,0.15);
+      --cream: #F7F4EF; --cream-dark: #EDE8DF; --text: #1A1A2E; --muted: #8892A4;
+      --white: #FFFFFF; --radius: 12px; --success: #2ECC71; --danger: #E74C3C;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+
+    /* NAV */
+    nav { background: var(--navy); padding: 0 5%; height: 60px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--amber); }
+    .nav-logo { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+    .nav-logo-text { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 900; color: var(--white); letter-spacing: -0.5px; }
+    .nav-logo-text span { color: var(--amber); }
+    .nav-back { color: rgba(255,255,255,0.55); font-size: 13px; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color 0.2s; }
+    .nav-back:hover { color: var(--amber); }
+
+    /* PAGE HEADER */
+    .page-header { background: var(--navy); padding: 44px 5% 48px; }
+    .page-header .eyebrow { font-size: 10px; letter-spacing: 3px; color: var(--amber); text-transform: uppercase; font-weight: 700; margin-bottom: 10px; }
+    .page-header h1 { font-family: 'Fraunces', serif; font-size: clamp(26px, 4vw, 40px); font-weight: 900; color: var(--white); letter-spacing: -1px; line-height: 1.1; }
+    .page-header p { font-size: 14px; color: rgba(255,255,255,0.5); margin-top: 10px; max-width: 520px; line-height: 1.6; }
+
+    /* LAYOUT */
+    .calc-layout { display: grid; grid-template-columns: 400px 1fr; gap: 28px; padding: 36px 5%; max-width: 1200px; margin: 0 auto; }
+    @media (max-width: 900px) { .calc-layout { grid-template-columns: 1fr; } }
+
+    /* INPUTS PANEL */
+    .panel { background: var(--white); border-radius: var(--radius); border: 1px solid var(--cream-dark); padding: 28px; }
+    .panel-title { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 22px; padding-bottom: 14px; border-bottom: 1px solid var(--cream-dark); }
+
+    .field { margin-bottom: 18px; }
+    .field label { display: block; font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 7px; letter-spacing: 0.2px; }
+    .field .hint { font-size: 11px; color: var(--muted); font-weight: 400; margin-left: 6px; }
+
+    .input-wrap { position: relative; }
+    .input-prefix { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-size: 14px; font-weight: 600; color: var(--muted); pointer-events: none; }
+    .input-suffix { position: absolute; right: 13px; top: 50%; transform: translateY(-50%); font-size: 13px; font-weight: 600; color: var(--muted); pointer-events: none; }
+
+    input[type="number"], select {
+      width: 100%; padding: 11px 14px; font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px; font-weight: 600; color: var(--text);
+      border: 1.5px solid var(--cream-dark); border-radius: 8px;
+      background: var(--cream); transition: border-color 0.2s, background 0.2s;
+      appearance: none;
+    }
+    input[type="number"].has-prefix { padding-left: 28px; }
+    input[type="number"].has-suffix { padding-right: 36px; }
+    input[type="number"]:focus, select:focus { outline: none; border-color: var(--amber); background: var(--white); }
+
+    .select-wrap { position: relative; }
+    .select-wrap::after { content: '▾'; position: absolute; right: 13px; top: 50%; transform: translateY(-50%); font-size: 12px; color: var(--muted); pointer-events: none; }
+    select { padding-right: 32px; cursor: pointer; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .toggle-row { display: flex; gap: 8px; }
+    .toggle-btn { flex: 1; padding: 9px 10px; border: 1.5px solid var(--cream-dark); border-radius: 7px; background: var(--cream); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; transition: all 0.18s; text-align: center; }
+    .toggle-btn.active { background: var(--navy); border-color: var(--navy); color: var(--white); }
+
+    /* RESULTS PANEL */
+    .results-panel { display: flex; flex-direction: column; gap: 18px; }
+
+    .result-hero { background: var(--navy); border-radius: var(--radius); padding: 32px 28px; color: var(--white); }
+    .result-hero-label { font-size: 11px; letter-spacing: 2px; color: rgba(255,255,255,0.45); text-transform: uppercase; margin-bottom: 8px; }
+    .result-hero-amount { font-family: 'Fraunces', serif; font-size: clamp(36px, 5vw, 54px); font-weight: 900; color: var(--amber); letter-spacing: -2px; line-height: 1; }
+    .result-hero-freq { font-size: 14px; color: rgba(255,255,255,0.4); margin-top: 6px; }
+    .result-hero-divider { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0; }
+
+    .result-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+    .result-row + .result-row { border-top: 1px solid rgba(255,255,255,0.07); }
+    .result-row-label { font-size: 13px; color: rgba(255,255,255,0.5); }
+    .result-row-value { font-size: 14px; font-weight: 700; color: var(--white); }
+    .result-row-value.accent { color: var(--amber); }
+
+    .result-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .result-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--cream-dark); padding: 20px; }
+    .result-card-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.3px; }
+    .result-card-value { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; color: var(--navy); letter-spacing: -0.5px; }
+    .result-card-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+    /* CHART */
+    .chart-panel { background: var(--white); border-radius: var(--radius); border: 1px solid var(--cream-dark); padding: 24px; }
+    .chart-title { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 16px; }
+    .chart-wrap { display: flex; align-items: center; gap: 28px; }
+    #pieChart { flex-shrink: 0; }
+    .chart-legend { display: flex; flex-direction: column; gap: 12px; }
+    .legend-item { display: flex; align-items: center; gap: 10px; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    .legend-info { display: flex; flex-direction: column; }
+    .legend-label { font-size: 11px; color: var(--muted); }
+    .legend-val { font-size: 14px; font-weight: 700; color: var(--navy); }
+
+    /* AMORTIZATION TABLE */
+    .amort-panel { background: var(--white); border-radius: var(--radius); border: 1px solid var(--cream-dark); padding: 24px; }
+    .amort-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .amort-title { font-size: 13px; font-weight: 700; color: var(--navy); }
+    .toggle-link { font-size: 12px; color: var(--amber); cursor: pointer; font-weight: 600; background: none; border: none; }
+
+    .amort-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .amort-table th { text-align: left; padding: 8px 10px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--cream-dark); }
+    .amort-table td { padding: 9px 10px; border-bottom: 1px solid var(--cream-dark); color: var(--text); }
+    .amort-table tr:last-child td { border-bottom: none; }
+    .amort-table tr:hover td { background: var(--cream); }
+    .amort-table .term-row td { background: var(--amber-dim); font-weight: 700; }
+
+    /* DISCLAIMER */
+    .disclaimer { background: var(--cream-dark); border-radius: var(--radius); padding: 16px 18px; display: flex; gap: 12px; }
+    .disclaimer p { font-size: 11px; color: var(--muted); line-height: 1.7; }
+    .disclaimer strong { color: var(--text); }
+
+    /* CMHC WARNING */
+    .cmhc-notice { display: none; background: var(--amber-dim); border: 1px solid rgba(232,160,48,0.4); border-radius: 8px; padding: 12px 14px; margin-top: 12px; }
+    .cmhc-notice p { font-size: 12px; color: var(--navy); line-height: 1.6; }
+    .cmhc-notice strong { font-weight: 700; }
+    .cmhc-notice.show { display: block; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="../index.html" class="nav-logo">
+    <svg width="28" height="28" viewBox="0 0 34 34" fill="none">
+      <path d="M17 28L17 9" stroke="#E8A030" stroke-width="2" stroke-linecap="round"/>
+      <path d="M17 9L8 24L17 24Z" fill="rgba(232,160,48,0.7)"/>
+      <path d="M17 13L26 23L17 23Z" fill="rgba(255,255,255,0.15)"/>
+      <path d="M9 29Q17 27 25 29" stroke="#E8A030" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    </svg>
+    <span class="nav-logo-text">Wind<span>fall</span></span>
+  </a>
+  <a href="../index.html#calculators" class="nav-back">← All Calculators</a>
+</nav>
+
+<div class="page-header">
+  <p class="eyebrow">Calculator · Mortgage</p>
+  <h1>Mortgage Payment Calculator</h1>
+  <p>Canadian-specific calculation using semi-annual compounding as required by the Interest Act. Supports all payment frequencies including accelerated options.</p>
+</div>
+
+<div class="calc-layout">
+
+  <!-- INPUTS -->
+  <div>
+    <div class="panel" style="margin-bottom:18px;">
+      <p class="panel-title">Your Mortgage Details</p>
+
+      <div class="field">
+        <label>Mortgage Amount <span class="hint">purchase price minus down payment</span></label>
+        <div class="input-wrap">
+          <span class="input-prefix">$</span>
+          <input type="number" id="mortgageAmount" class="has-prefix" value="500000" min="10000" max="10000000" step="1000" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Down Payment <span class="hint">optional — for CMHC check</span></label>
+        <div class="two-col">
+          <div class="input-wrap">
+            <span class="input-prefix">$</span>
+            <input type="number" id="downPayment" class="has-prefix" value="100000" min="0" step="1000" />
+          </div>
+          <div class="input-wrap">
+            <input type="number" id="downPercent" class="has-suffix" value="20" min="0" max="100" step="0.5" />
+            <span class="input-suffix">%</span>
+          </div>
+        </div>
+        <div class="cmhc-notice" id="cmhcNotice">
+          <p><strong>CMHC Insurance Required.</strong> Down payments under 20% require mortgage default insurance. Your premium will be added to your mortgage balance. <a href="https://www.cmhc-schl.gc.ca/consumers/home-buying/mortgage-loan-insurance-for-consumers/cmhc-mortgage-loan-insurance-cost" target="_blank" style="color:var(--amber);">View CMHC rates →</a></p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Amortization Period</label>
+        <div class="two-col">
+          <div class="input-wrap">
+            <input type="number" id="amortYears" class="has-suffix" value="25" min="1" max="30" step="1" />
+            <span class="input-suffix">yr</span>
+          </div>
+          <div class="input-wrap">
+            <input type="number" id="amortMonths" class="has-suffix" value="0" min="0" max="11" step="1" />
+            <span class="input-suffix">mo</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Annual Interest Rate</label>
+        <div class="input-wrap">
+          <input type="number" id="interestRate" class="has-suffix" value="4.99" min="0.1" max="25" step="0.05" />
+          <span class="input-suffix">%</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Rate Type</label>
+        <div class="toggle-row">
+          <button class="toggle-btn active" onclick="setRateType(this,'Fixed')">Fixed</button>
+          <button class="toggle-btn" onclick="setRateType(this,'Variable')">Variable</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Mortgage Term</label>
+        <div class="select-wrap">
+          <select id="term">
+            <option value="1">1 Year</option>
+            <option value="2">2 Years</option>
+            <option value="3">3 Years</option>
+            <option value="4">4 Years</option>
+            <option value="5" selected>5 Years</option>
+            <option value="7">7 Years</option>
+            <option value="10">10 Years</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Payment Frequency</label>
+        <div class="select-wrap">
+          <select id="frequency">
+            <option value="monthly" selected>Monthly</option>
+            <option value="semimonthly">Semi-Monthly (24×/yr)</option>
+            <option value="biweekly">Bi-Weekly (26×/yr)</option>
+            <option value="accelbiweekly">Accelerated Bi-Weekly</option>
+            <option value="weekly">Weekly (52×/yr)</option>
+            <option value="accelweekly">Accelerated Weekly</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8892A4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <p><strong>Not financial advice.</strong> Results are estimates based on your inputs. Canadian mortgages use semi-annual compounding as required by the <em>Interest Act</em>. Actual payments may vary. Consult a mortgage professional before making decisions.</p>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-panel">
+
+    <!-- Hero Result -->
+    <div class="result-hero">
+      <div class="result-hero-label">Your Payment</div>
+      <div class="result-hero-amount" id="paymentAmount">$2,617</div>
+      <div class="result-hero-freq" id="paymentFreqLabel">per month</div>
+      <hr class="result-hero-divider" />
+      <div class="result-row">
+        <span class="result-row-label">Payments per year</span>
+        <span class="result-row-value" id="paymentsPerYear">12</span>
+      </div>
+      <div class="result-row">
+        <span class="result-row-label">Annual payment total</span>
+        <span class="result-row-value" id="annualTotal">$31,404</span>
+      </div>
+      <div class="result-row">
+        <span class="result-row-label">Balance at end of term</span>
+        <span class="result-row-value accent" id="balanceAtTerm">—</span>
+      </div>
+      <div class="result-row">
+        <span class="result-row-label">Interest paid during term</span>
+        <span class="result-row-value" id="interestDuringTerm">—</span>
+      </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="result-cards">
+      <div class="result-card">
+        <div class="result-card-label">Total amount paid</div>
+        <div class="result-card-value" id="totalPaid">$785,100</div>
+        <div class="result-card-sub">over full amortization</div>
+      </div>
+      <div class="result-card">
+        <div class="result-card-label">Total interest paid</div>
+        <div class="result-card-value" id="totalInterest">$285,100</div>
+        <div class="result-card-sub" id="interestPct">57% of mortgage</div>
+      </div>
+      <div class="result-card">
+        <div class="result-card-label">Effective annual rate</div>
+        <div class="result-card-value" id="effectiveRate">5.06%</div>
+        <div class="result-card-sub">Canadian compounding</div>
+      </div>
+      <div class="result-card">
+        <div class="result-card-label">Payoff date</div>
+        <div class="result-card-value" id="payoffDate">Jun 2050</div>
+        <div class="result-card-sub" id="amortSummary">25 yr amortization</div>
+      </div>
+    </div>
+
+    <!-- Pie Chart -->
+    <div class="chart-panel">
+      <div class="chart-title">Principal vs. Interest Breakdown</div>
+      <div class="chart-wrap">
+        <canvas id="pieChart" width="140" height="140"></canvas>
+        <div class="chart-legend">
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--navy);"></div>
+            <div class="legend-info">
+              <span class="legend-label">Principal</span>
+              <span class="legend-val" id="legendPrincipal">$500,000</span>
+            </div>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--amber);"></div>
+            <div class="legend-info">
+              <span class="legend-label">Total Interest</span>
+              <span class="legend-val" id="legendInterest">$285,100</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Amortization Schedule -->
+    <div class="amort-panel">
+      <div class="amort-header">
+        <span class="amort-title">Yearly Amortization Summary</span>
+        <button class="toggle-link" id="amortToggle" onclick="toggleAmort()">Show ▾</button>
+      </div>
+      <div id="amortTable" style="display:none; overflow-x:auto;">
+        <table class="amort-table" id="amortTableBody">
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>Payment</th>
+              <th>Principal</th>
+              <th>Interest</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody id="amortRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // State
+  let rateType = 'Fixed';
+  let amortVisible = false;
+
+  // Helpers
+  const fmt = (n) => '$' + Math.round(n).toLocaleString('en-CA');
+  const fmtDec = (n) => '$' + n.toLocaleString('en-CA', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+  function setRateType(btn, type) {
+    rateType = type;
+    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    calculate();
+  }
+
+  function toggleAmort() {
+    amortVisible = !amortVisible;
+    document.getElementById('amortTable').style.display = amortVisible ? 'block' : 'none';
+    document.getElementById('amortToggle').textContent = amortVisible ? 'Hide ▴' : 'Show ▾';
+  }
+
+  // Sync down payment $ and %
+  const mortAmt = () => parseFloat(document.getElementById('mortgageAmount').value) || 0;
+  document.getElementById('downPayment').addEventListener('input', function() {
+    const dp = parseFloat(this.value) || 0;
+    document.getElementById('downPercent').value = mortAmt() > 0 ? (dp / mortAmt() * 100).toFixed(1) : 0;
+    checkCMHC(); calculate();
+  });
+  document.getElementById('downPercent').addEventListener('input', function() {
+    const pct = parseFloat(this.value) || 0;
+    document.getElementById('downPayment').value = Math.round(mortAmt() * pct / 100);
+    checkCMHC(); calculate();
+  });
+  document.getElementById('mortgageAmount').addEventListener('input', function() {
+    const pct = parseFloat(document.getElementById('downPercent').value) || 0;
+    document.getElementById('downPayment').value = Math.round(mortAmt() * pct / 100);
+    checkCMHC(); calculate();
+  });
+
+  function checkCMHC() {
+    const pct = parseFloat(document.getElementById('downPercent').value) || 0;
+    const notice = document.getElementById('cmhcNotice');
+    notice.classList.toggle('show', pct > 0 && pct < 20);
+  }
+
+  // Core calculation - Canadian semi-annual compounding (Interest Act)
+  function calcPayment(principal, annualRate, totalPayments, freqPerYear) {
+    const semiAnnualRate = annualRate / 2;
+    const ratePerPeriod = Math.pow(1 + semiAnnualRate, 2 / freqPerYear) - 1;
+    if (ratePerPeriod === 0) return principal / totalPayments;
+    return principal * ratePerPeriod * Math.pow(1 + ratePerPeriod, totalPayments) / (Math.pow(1 + ratePerPeriod, totalPayments) - 1);
+  }
+
+  function getFreqConfig(freq) {
+    switch(freq) {
+      case 'monthly':       return { perYear: 12, label: 'per month', accel: false };
+      case 'semimonthly':   return { perYear: 24, label: 'semi-monthly', accel: false };
+      case 'biweekly':      return { perYear: 26, label: 'bi-weekly', accel: false };
+      case 'accelbiweekly': return { perYear: 26, label: 'bi-weekly (accelerated)', accel: 'biweekly' };
+      case 'weekly':        return { perYear: 52, label: 'per week', accel: false };
+      case 'accelweekly':   return { perYear: 52, label: 'weekly (accelerated)', accel: 'weekly' };
+      default:              return { perYear: 12, label: 'per month', accel: false };
+    }
+  }
+
+  function calculate() {
+    const principal = mortAmt();
+    const annualRate = (parseFloat(document.getElementById('interestRate').value) || 0) / 100;
+    const amortYears = parseInt(document.getElementById('amortYears').value) || 25;
+    const amortMonths = parseInt(document.getElementById('amortMonths').value) || 0;
+    const termYears = parseInt(document.getElementById('term').value) || 5;
+    const freqKey = document.getElementById('frequency').value;
+    const { perYear, label, accel } = getFreqConfig(freqKey);
+
+    const totalMonths = amortYears * 12 + amortMonths;
+    const totalPayments = Math.round(totalMonths / 12 * perYear);
+
+    // Effective annual rate for display
+    const ear = Math.pow(1 + annualRate / 2, 2) - 1;
+
+    let paymentAmt;
+    if (accel === 'biweekly') {
+      // Accelerated bi-weekly = monthly payment / 2
+      const monthlyPmt = calcPayment(principal, annualRate, totalMonths, 12);
+      paymentAmt = monthlyPmt / 2;
+    } else if (accel === 'weekly') {
+      const monthlyPmt = calcPayment(principal, annualRate, totalMonths, 12);
+      paymentAmt = monthlyPmt / 4;
+    } else {
+      paymentAmt = calcPayment(principal, annualRate, totalPayments, perYear);
+    }
+
+    // Build yearly amortization
+    const semiAnnualRate = annualRate / 2;
+    const ratePerPeriod = Math.pow(1 + semiAnnualRate, 2 / perYear) - 1;
+    let balance = principal;
+    let totalInterestPaid = 0;
+    let termPayments = Math.round(termYears * perYear);
+    let balanceAtTerm = principal;
+    let interestInTerm = 0;
+    let actualPayments = 0;
+
+    const yearlyData = [];
+    let yearlyPrincipal = 0, yearlyInterest = 0, yearlyPayment = 0;
+    let currentYear = new Date().getFullYear();
+
+    for (let p = 1; balance > 0.01; p++) {
+      const interestPmt = balance * ratePerPeriod;
+      let principalPmt = Math.min(paymentAmt - interestPmt, balance);
+      if (principalPmt < 0) principalPmt = 0;
+      balance -= principalPmt;
+      totalInterestPaid += interestPmt;
+      yearlyPrincipal += principalPmt;
+      yearlyInterest += interestPmt;
+      yearlyPayment += paymentAmt;
+      actualPayments++;
+
+      if (p === termPayments) {
+        balanceAtTerm = balance;
+        interestInTerm = yearlyInterest + (p > perYear ? yearlyData.reduce((s,r) => s + r.interest, 0) : 0);
+      }
+
+      const periodYear = Math.ceil(p / perYear);
+      if (p % perYear === 0 || balance <= 0.01) {
+        yearlyData.push({
+          year: currentYear + periodYear - 1,
+          payment: yearlyPayment,
+          principal: yearlyPrincipal,
+          interest: yearlyInterest,
+          balance: Math.max(0, balance),
+          isTerm: periodYear === termYears
+        });
+        yearlyPrincipal = 0; yearlyInterest = 0; yearlyPayment = 0;
+      }
+    }
+
+    // Calculate interest during term from yearly data
+    interestInTerm = yearlyData.slice(0, termYears).reduce((s, r) => s + r.interest, 0);
+    balanceAtTerm = termYears <= yearlyData.length ? yearlyData[termYears - 1].balance : 0;
+
+    const totalPaid = paymentAmt * actualPayments;
+    const payoffMonths = Math.round(actualPayments / perYear * 12);
+    const payoffDate = new Date(new Date().getFullYear(), new Date().getMonth() + payoffMonths);
+    const payoffStr = payoffDate.toLocaleDateString('en-CA', { month: 'short', year: 'numeric' });
+
+    // Update UI
+    document.getElementById('paymentAmount').textContent = fmtDec(paymentAmt);
+    document.getElementById('paymentFreqLabel').textContent = label;
+    document.getElementById('paymentsPerYear').textContent = perYear;
+    document.getElementById('annualTotal').textContent = fmt(paymentAmt * perYear);
+    document.getElementById('balanceAtTerm').textContent = fmt(balanceAtTerm);
+    document.getElementById('interestDuringTerm').textContent = fmt(interestInTerm);
+    document.getElementById('totalPaid').textContent = fmt(totalPaid);
+    document.getElementById('totalInterest').textContent = fmt(totalInterestPaid);
+    document.getElementById('interestPct').textContent = ((totalInterestPaid / principal) * 100).toFixed(0) + '% of mortgage';
+    document.getElementById('effectiveRate').textContent = (ear * 100).toFixed(3) + '%';
+    document.getElementById('payoffDate').textContent = payoffStr;
+    document.getElementById('amortSummary').textContent = amortYears + 'yr' + (amortMonths > 0 ? ' ' + amortMonths + 'mo' : '') + ' amortization';
+    document.getElementById('legendPrincipal').textContent = fmt(principal);
+    document.getElementById('legendInterest').textContent = fmt(totalInterestPaid);
+
+    drawPie(principal, totalInterestPaid);
+    buildAmortTable(yearlyData, termYears);
+  }
+
+  function drawPie(principal, interest) {
+    const canvas = document.getElementById('pieChart');
+    const ctx = canvas.getContext('2d');
+    const total = principal + interest;
+    const cx = 70, cy = 70, r = 62;
+    ctx.clearRect(0, 0, 140, 140);
+
+    // Principal arc
+    const pctPrincipal = principal / total;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * pctPrincipal);
+    ctx.closePath();
+    ctx.fillStyle = '#0D1F3C';
+    ctx.fill();
+
+    // Interest arc
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, -Math.PI / 2 + 2 * Math.PI * pctPrincipal, -Math.PI / 2 + 2 * Math.PI);
+    ctx.closePath();
+    ctx.fillStyle = '#E8A030';
+    ctx.fill();
+
+    // Center hole
+    ctx.beginPath();
+    ctx.arc(cx, cy, 38, 0, 2 * Math.PI);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fill();
+
+    // Center text
+    ctx.fillStyle = '#0D1F3C';
+    ctx.font = '700 11px Plus Jakarta Sans, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText((pctPrincipal * 100).toFixed(0) + '%', cx, cy - 3);
+    ctx.fillStyle = '#8892A4';
+    ctx.font = '500 9px Plus Jakarta Sans, sans-serif';
+    ctx.fillText('principal', cx, cy + 10);
+  }
+
+  function buildAmortTable(data, termYears) {
+    const tbody = document.getElementById('amortRows');
+    tbody.innerHTML = data.map((row, i) => `
+      <tr class="${i + 1 === termYears ? 'term-row' : ''}">
+        <td>${row.year}${i + 1 === termYears ? ' ★' : ''}</td>
+        <td>${fmt(row.payment)}</td>
+        <td>${fmt(row.principal)}</td>
+        <td>${fmt(row.interest)}</td>
+        <td>${fmt(row.balance)}</td>
+      </tr>
+    `).join('');
+  }
+
+  // Listen for input changes
+  document.querySelectorAll('input[type="number"], select').forEach(el => {
+    el.addEventListener('input', calculate);
+  });
+
+  // Init
+  checkCMHC();
+  calculate();
+</script>
+</body>
+</html>
