@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Windfall — Free Canadian Financial Calculators</title>
+  <meta name="description" content="Free, straightforward financial calculators built for Canadians. TFSA, RRSP, mortgage stress test, rent vs. buy, and more. No account required." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:        #0D1F3C;
+      --navy-deep:   #081628;
+      --navy-mid:    #162E55;
+      --amber:       #E8A030;
+      --amber-light: #FBE8C5;
+      --amber-dim:   rgba(232,160,48,0.18);
+      --cream:       #F7F4EF;
+      --cream-dark:  #EDE8DF;
+      --text:        #1A1A2E;
+      --muted:       #8892A4;
+      --white:       #FFFFFF;
+      --radius:      12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(13, 31, 60, 0.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(232,160,48,0.15);
+      padding: 0 5%;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .nav-logo-icon {
+      width: 34px;
+      height: 34px;
+    }
+
+    .nav-logo-text {
+      font-family: 'Fraunces', serif;
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: -0.5px;
+    }
+
+    .nav-logo-text span {
+      color: var(--amber);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: rgba(255,255,255,0.55);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--white); }
+
+    .nav-cta {
+      background: var(--amber);
+      color: var(--navy) !important;
+      font-weight: 700 !important;
+      padding: 8px 18px;
+      border-radius: 7px;
+      transition: opacity 0.2s !important;
+    }
+
+    .nav-cta:hover { opacity: 0.88; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      background: var(--navy);
+      display: flex;
+      align-items: center;
+      padding: 120px 5% 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Animated wave lines */
+    .hero-waves {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.07;
+    }
+
+    .hero-waves svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Ambient glow */
+    .hero-glow {
+      position: absolute;
+      top: -200px;
+      right: -100px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(232,160,48,0.12) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .hero-glow-2 {
+      position: absolute;
+      bottom: -150px;
+      left: -100px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(22,46,85,0.8) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 680px;
+      animation: fadeUp 0.8s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--amber-dim);
+      border: 1px solid rgba(232,160,48,0.3);
+      border-radius: 30px;
+      padding: 5px 14px;
+      margin-bottom: 24px;
+      animation: fadeUp 0.8s 0.1s ease both;
+    }
+
+    .hero-badge span {
+      color: var(--amber);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .hero-badge-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--amber);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .hero h1 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(40px, 6vw, 70px);
+      font-weight: 900;
+      color: var(--white);
+      line-height: 1.05;
+      letter-spacing: -2px;
+      margin-bottom: 22px;
+      animation: fadeUp 0.8s 0.15s ease both;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--amber);
+    }
+
+    .hero-sub {
+      font-size: 17px;
+      color: rgba(255,255,255,0.58);
+      line-height: 1.65;
+      margin-bottom: 36px;
+      max-width: 520px;
+      animation: fadeUp 0.8s 0.2s ease both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      animation: fadeUp 0.8s 0.25s ease both;
+    }
+
+    .btn-primary {
+      background: var(--amber);
+      color: var(--navy);
+      border: none;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 800;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.18s, box-shadow 0.18s;
+      box-shadow: 0 4px 20px rgba(232,160,48,0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(232,160,48,0.45);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: rgba(255,255,255,0.65);
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 14px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: border-color 0.18s, color 0.18s;
+    }
+
+    .btn-ghost:hover {
+      border-color: rgba(255,255,255,0.4);
+      color: var(--white);
+    }
+
+    /* Hero sailboat illustration */
+    .hero-visual {
+      position: absolute;
+      right: 5%;
+      bottom: 0;
+      width: 380px;
+      opacity: 0.12;
+      pointer-events: none;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-16px); }
+    }
+
+    /* Stats bar */
+    .hero-stats {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255,255,255,0.04);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 18px 5%;
+      display: flex;
+      gap: 40px;
+      animation: fadeUp 0.8s 0.4s ease both;
+    }
+
+    .hero-stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .hero-stat-number {
+      font-family: 'Fraunces', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--amber);
+      letter-spacing: -0.5px;
+    }
+
+    .hero-stat-label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.5px;
+    }
+
+    /* ── TOOLS SECTION ── */
+    .tools-section {
+      padding: 100px 5%;
+      background: var(--cream);
+    }
+
+    .section-eyebrow {
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--amber);
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 12px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .section-title {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 14px;
+    }
+
+    .section-sub {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.65;
+      max-width: 520px;
+      margin-bottom: 52px;
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .tool-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 24px;
+      border: 1px solid var(--cream-dark);
+      text-decoration: none;
+      display: block;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tool-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--amber);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.25s ease;
+    }
+
+    .tool-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 36px rgba(13,31,60,0.12);
+      border-color: rgba(232,160,48,0.3);
+    }
+
+    .tool-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .tool-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--navy);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .tool-icon svg {
+      width: 22px;
+      height: 22px;
+      stroke: var(--amber);
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .tool-tag {
+      display: inline-block;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--amber);
+      background: var(--amber-dim);
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .tool-name {
+      font-family: 'Fraunces', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: -0.3px;
+      margin-bottom: 8px;
+    }
+
+    .tool-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .tool-arrow {
+      position: absolute;
+      bottom: 22px;
+      right: 22px;
+      color: var(--amber);
+      font-size: 18px;
+      opacity: 0;
+      transform: translateX(-6px);
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .tool-card:hover .tool-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* ── WHY SECTION ── */
+    .why-section {
+      padding: 100px 5%;
+      background: var(--navy);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .why-section::before {
+      content: '';
+      position: absolute;
+      top: -100px; right: -100px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(232,160,48,0.07) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .why-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .why-content .section-title { color: var(--white); }
+    .why-content .section-sub { color: rgba(255,255,255,0.5); }
+
+    .why-features {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .why-feature {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .why-feature-icon {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      background: var(--amber-dim);
+      border: 1px solid rgba(232,160,48,0.25);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .why-feature-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--amber);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .why-feature-text h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 4px;
+    }
+
+    .why-feature-text p {
+      font-size: 13px;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.6;
+    }
+
+    /* ── DISCLAIMER SECTION ── */
+    .disclaimer-section {
+      background: var(--cream-dark);
+      padding: 36px 5%;
+      border-top: 1px solid #DDD8CE;
+    }
+
+    .disclaimer-inner {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      max-width: 780px;
+    }
+
+    .disclaimer-icon {
+      min-width: 20px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .disclaimer-text {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .disclaimer-text strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--navy-deep);
+      padding: 48px 5% 28px;
+    }
+
+    .footer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 36px;
+      padding-bottom: 36px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .footer-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .footer-logo-text {
+      font-family: 'Fraunces', serif;
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: -0.5px;
+    }
+
+    .footer-tagline {
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      max-width: 220px;
+      line-height: 1.5;
+    }
+
+    .footer-nav {
+      display: flex;
+      gap: 48px;
+    }
+
+    .footer-nav-col h5 {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 14px;
+      font-weight: 600;
+    }
+
+    .footer-nav-col ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .footer-nav-col a {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-nav-col a:hover { color: var(--amber); }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-copy {
+      font-size: 11px;
+      color: rgba(255,255,255,0.2);
+    }
+
+    .footer-copy span { color: var(--amber); }
+
+    .footer-legal {
+      font-size: 11px;
+      color: rgba(255,255,255,0.2);
+      text-align: right;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hero-visual { display: none; }
+      .why-grid { grid-template-columns: 1fr; gap: 40px; }
+      .footer-top { flex-direction: column; gap: 32px; }
+      .footer-nav { gap: 28px; }
+      .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+      .footer-legal { text-align: center; }
+      .hero-stats { flex-wrap: wrap; gap: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="/" class="nav-logo">
+      <svg class="nav-logo-icon" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="17" cy="17" r="17" fill="rgba(232,160,48,0.12)"/>
+        <!-- Sailboat -->
+        <path d="M17 26 L17 10" stroke="#E8A030" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M17 10 L9 24 L17 24 Z" fill="rgba(232,160,48,0.7)"/>
+        <path d="M17 13 L25 22 L17 22 Z" fill="rgba(255,255,255,0.15)"/>
+        <path d="M10 26 Q17 24 24 26" stroke="#E8A030" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+        <!-- Water line -->
+        <path d="M7 28 Q10 27 13 28 Q16 29 19 28 Q22 27 25 28" stroke="rgba(232,160,48,0.4)" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span class="nav-logo-text">Wind<span>fall</span></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#calculators">Calculators</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#calculators" class="nav-cta">Get Started</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-waves">
+      <svg viewBox="0 0 1440 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,400 Q180,360 360,400 Q540,440 720,400 Q900,360 1080,400 Q1260,440 1440,400" stroke="white" stroke-width="1.5" fill="none"/>
+        <path d="M0,450 Q180,410 360,450 Q540,490 720,450 Q900,410 1080,450 Q1260,490 1440,450" stroke="white" stroke-width="1" fill="none"/>
+        <path d="M0,500 Q180,460 360,500 Q540,540 720,500 Q900,460 1080,500 Q1260,540 1440,500" stroke="white" stroke-width="0.7" fill="none"/>
+        <path d="M0,350 Q180,320 360,350 Q540,380 720,350 Q900,320 1080,350 Q1260,380 1440,350" stroke="white" stroke-width="0.5" fill="none"/>
+      </svg>
+    </div>
+    <div class="hero-glow"></div>
+    <div class="hero-glow-2"></div>
+
+    <!-- Large sailboat silhouette -->
+    <svg class="hero-visual" viewBox="0 0 380 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M190 460 L190 60" stroke="white" stroke-width="4" stroke-linecap="round"/>
+      <path d="M190 60 L50 380 L190 380 Z" fill="white"/>
+      <path d="M190 100 L320 340 L190 340 Z" fill="white" opacity="0.5"/>
+      <path d="M40 460 Q115 440 190 460 Q265 480 340 460" stroke="white" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <path d="M0,440 Q95,420 190,440 Q285,460 380,440" stroke="white" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.4"/>
+      <path d="M0,460 Q95,445 190,460 Q285,475 380,460" stroke="white" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.25"/>
+    </svg>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <div class="hero-badge-dot"></div>
+        <span>Free · Canadian · No Account Needed</span>
+      </div>
+      <h1>Good winds.<br /><em>Better finances.</em></h1>
+      <p class="hero-sub">
+        Free, straightforward financial calculators built specifically for Canadians. Make confident decisions about your TFSA, mortgage, taxes, and more — no jargon, no sales pitch.
+      </p>
+      <div class="hero-actions">
+        <a href="#calculators" class="btn-primary">
+          Explore Calculators
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#about" class="btn-ghost">How it works</a>
+      </div>
+    </div>
+
+    <div class="hero-stats">
+      <div class="hero-stat-item">
+        <span class="hero-stat-number">10+</span>
+        <span class="hero-stat-label">Free Calculators</span>
+      </div>
+      <div class="hero-stat-item">
+        <span class="hero-stat-number">100%</span>
+        <span class="hero-stat-label">Canadian-Specific</span>
+      </div>
+      <div class="hero-stat-item">
+        <span class="hero-stat-number">$0</span>
+        <span class="hero-stat-label">Always Free</span>
+      </div>
+      <div class="hero-stat-item">
+        <span class="hero-stat-number">0</span>
+        <span class="hero-stat-label">Accounts Required</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOOLS SECTION -->
+  <section class="tools-section" id="calculators">
+    <div class="section-eyebrow">Tools</div>
+    <h2 class="section-title">Every calculator<br />you actually need.</h2>
+    <p class="section-sub">Built with Canadian tax rules, contribution limits, and regulations in mind. Updated annually.</p>
+
+    <div class="tools-grid">
+
+      <a href="calculators/tfsa.html" class="tool-card">
+        <div class="tool-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <span class="tool-tag">Registered Account</span>
+        <div class="tool-name">TFSA Optimizer</div>
+        <p class="tool-desc">Track your contribution room, model growth scenarios, and find the optimal contribution strategy for your situation.</p>
+        <span class="tool-arrow">→</span>
+      </a>
+
+      <a href="calculators/rrsp-tfsa.html" class="tool-card">
+        <div class="tool-icon">
+          <svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        </div>
+        <span class="tool-tag">Comparison</span>
+        <div class="tool-name">RRSP vs. TFSA</div>
+        <p class="tool-desc">Compare the after-tax value of contributing to your RRSP or TFSA based on your current and expected future tax rate.</p>
+        <span class="tool-arrow">→</span>
+      </a>
+
+      <a href="calculators/fhsa.html" class="tool-card">
+        <div class="tool-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <span class="tool-tag">First Home</span>
+        <div class="tool-name">FHSA Planner</div>
+        <p class="tool-desc">Project your First Home Savings Account growth, model contribution timing, and estimate your total buying power.</p>
+        <span class="tool-arrow">→</span>
+      </a>
+
+      <a href="calculators/stress-test.html" class="tool-card">
+        <div class="tool-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <span class="tool-tag">Mortgage</span>
+        <div class="tool-name">Stress Test Calculator</div>
+        <p class="tool-desc">Calculate your B-20 stress test qualifying rate and maximum mortgage amount under OSFI guidelines.</p>
+        <span class="tool-arrow">→</span>
+      </a>
+
+      <a href="calculators/rent-vs-buy.html" class="tool-card">
+        <div class="tool-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <span class="tool-tag">Ontario · Real Estate</span>
+        <div class="tool-name">Rent vs. Buy</div>
+        <p class="tool-desc">Full Ontario analysis including land transfer tax, CMHC insurance, opportunity cost, and 10-year net worth projection.</p>
+        <span class="tool-arrow">→</span>
+      </a>
+
+      <a href="calculators/tax.html" class="tool-card">
+        <div class="tool-icon">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <span class="tool-tag">Tax</span>
+        <div class="tool-name">Marginal Tax Rate</div>
+        <p class="tool-desc">Federal and provincial combined marginal rates by income bracket for every province and territory.</p>
+        <span class="tool-arrow">→</span>
+      </a>
+
+      <a href="calculators/capital-gains.html" class="tool-card">
+        <div class="tool-icon">
+          <svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        </div>
+        <span class="tool-tag">Tax · Investing</span>
+        <div class="tool-name">Capital Gains Calculator</div>
+        <p class="tool-desc">Calculate your taxable capital gain under both the 50% and 2/3 inclusion rate — and which threshold applies to you.</p>
+        <span class="tool-arrow">→</span>
+      </a>
+
+      <a href="calculators/fee-drag.html" class="tool-card">
+        <div class="tool-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        </div>
+        <span class="tool-tag">Investing</span>
+        <div class="tool-name">Investment Fee Drag</div>
+        <p class="tool-desc">See exactly how much MER fees cost you over 10, 20, and 30 years — and what lower-cost alternatives could save you.</p>
+        <span class="tool-arrow">→</span>
+      </a>
+
+      <a href="calculators/compound.html" class="tool-card">
+        <div class="tool-icon">
+          <svg viewBox="0 0 24 24"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+        </div>
+        <span class="tool-tag">Growth</span>
+        <div class="tool-name">Compound Growth</div>
+        <p class="tool-desc">Model lump sum vs. dollar-cost averaging over time. Visualize how regular contributions compound across different return scenarios.</p>
+        <span class="tool-arrow">→</span>
+      </a>
+
+      <a href="calculators/rrif.html" class="tool-card">
+        <div class="tool-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <span class="tool-tag">Retirement</span>
+        <div class="tool-name">RRIF Withdrawal Schedule</div>
+        <p class="tool-desc">Calculate mandatory minimum withdrawals from your RRIF by age, and project the impact on your retirement income and taxes.</p>
+        <span class="tool-arrow">→</span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- WHY SECTION -->
+  <section class="why-section" id="about">
+    <div class="why-grid">
+      <div class="why-content">
+        <div class="section-eyebrow">Why Windfall</div>
+        <h2 class="section-title">Built for real decisions,<br />not just numbers.</h2>
+        <p class="section-sub">Most financial calculators are either too simple to be useful or too complicated to understand. Windfall is built to be both accurate and accessible.</p>
+      </div>
+      <div class="why-features">
+        <div class="why-feature">
+          <div class="why-feature-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="why-feature-text">
+            <h4>Canadian-first, always</h4>
+            <p>Built with Canadian tax brackets, OSFI rules, provincial rates, and registered account limits. Not adapted from American tools.</p>
+          </div>
+        </div>
+        <div class="why-feature">
+          <div class="why-feature-icon">
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <div class="why-feature-text">
+            <h4>Transparent assumptions</h4>
+            <p>Every calculator shows its inputs, formulas, and assumptions clearly. No black boxes — you stay in control of the numbers.</p>
+          </div>
+        </div>
+        <div class="why-feature">
+          <div class="why-feature-icon">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="why-feature-text">
+            <h4>No account. No cost. No catch.</h4>
+            <p>Windfall is free to use, requires no sign-up, and will never sell your data or serve you ads. Just tools that work.</p>
+          </div>
+        </div>
+        <div class="why-feature">
+          <div class="why-feature-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          </div>
+          <div class="why-feature-text">
+            <h4>Updated annually</h4>
+            <p>Contribution limits, tax brackets, and regulatory thresholds are reviewed and updated each year to stay accurate.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DISCLAIMER -->
+  <div class="disclaimer-section">
+    <div class="disclaimer-inner">
+      <svg class="disclaimer-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <p class="disclaimer-text">
+        <strong>Not financial advice.</strong> Windfall provides educational tools and calculators for informational purposes only. Results are estimates based on the inputs you provide and should not be relied upon as financial, tax, or legal advice. Always consult a qualified financial advisor, accountant, or legal professional before making financial decisions.
+      </p>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <svg width="26" height="26" viewBox="0 0 34 34" fill="none">
+            <path d="M17 30 L17 8" stroke="#E8A030" stroke-width="2" stroke-linecap="round"/>
+            <path d="M17 8 L7 26 L17 26 Z" fill="rgba(232,160,48,0.7)"/>
+            <path d="M17 12 L27 24 L17 24 Z" fill="rgba(255,255,255,0.15)"/>
+            <path d="M9 31 Q17 29 25 31" stroke="#E8A030" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          </svg>
+          <span class="footer-logo-text">Windfall</span>
+        </div>
+        <p class="footer-tagline">Free Canadian financial calculators. No account. No cost. No catch.</p>
+      </div>
+      <nav class="footer-nav">
+        <div class="footer-nav-col">
+          <h5>Calculators</h5>
+          <ul>
+            <li><a href="calculators/tfsa.html">TFSA Optimizer</a></li>
+            <li><a href="calculators/rrsp-tfsa.html">RRSP vs. TFSA</a></li>
+            <li><a href="calculators/fhsa.html">FHSA Planner</a></li>
+            <li><a href="calculators/stress-test.html">Stress Test</a></li>
+            <li><a href="calculators/rent-vs-buy.html">Rent vs. Buy</a></li>
+          </ul>
+        </div>
+        <div class="footer-nav-col">
+          <h5>More Tools</h5>
+          <ul>
+            <li><a href="calculators/tax.html">Marginal Tax Rate</a></li>
+            <li><a href="calculators/capital-gains.html">Capital Gains</a></li>
+            <li><a href="calculators/fee-drag.html">Fee Drag</a></li>
+            <li><a href="calculators/compound.html">Compound Growth</a></li>
+            <li><a href="calculators/rrif.html">RRIF Withdrawals</a></li>
+          </ul>
+        </div>
+        <div class="footer-nav-col">
+          <h5>Site</h5>
+          <ul>
+            <li><a href="#about">About</a></li>
+            <li><a href="#">Disclaimer</a></li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2025 <span>Windfall</span>. All rights reserved.</p>
+      <p class="footer-legal">Educational use only · Not financial advice · Canada</p>
+    </div>
+  </footer>
+
+</body>
+</html>
