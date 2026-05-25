@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>Savings Calculator — Windfall</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+
+:root{
+  --navy:#0D1F3C;
+  --navy-deep:#081628;
+  --navy-mid:#162E55;
+  --amber:#E8A030;
+  --amber-light:#FBE8C5;
+  --amber-dim:rgba(232,160,48,0.15);
+  --cream:#F7F4EF;
+  --cream-dark:#EDE8DF;
+  --text:#1A1A2E;
+  --muted:#8892A4;
+  --white:#FFFFFF;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:var(--cream);
+  color:var(--text);
+}
+
+/* NAV */
+
+nav{
+  background:var(--navy);
+  padding:0 5%;
+  height:60px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:2px solid var(--amber);
+}
+
+.nav-logo{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  text-decoration:none;
+}
+
+.nav-logo-text{
+  font-family:'Fraunces',serif;
+  font-size:20px;
+  font-weight:900;
+  color:var(--white);
+}
+
+.nav-logo-text span{
+  color:var(--amber);
+}
+
+.nav-back{
+  color:rgba(255,255,255,0.55);
+  font-size:13px;
+  text-decoration:none;
+}
+
+/* HEADER */
+
+.page-header{
+  background:var(--navy);
+  padding:44px 5% 48px;
+}
+
+.eyebrow{
+  font-size:10px;
+  letter-spacing:3px;
+  color:var(--amber);
+  text-transform:uppercase;
+  font-weight:700;
+  margin-bottom:10px;
+}
+
+.page-header h1{
+  font-family:'Fraunces',serif;
+  font-size:clamp(32px,5vw,48px);
+  font-weight:900;
+  color:var(--white);
+  letter-spacing:-1px;
+}
+
+.page-header p{
+  font-size:14px;
+  color:rgba(255,255,255,0.55);
+  margin-top:12px;
+  max-width:620px;
+  line-height:1.7;
+}
+
+/* LAYOUT */
+
+.page-body{
+  padding:36px 5%;
+  max-width:1180px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:360px 1fr;
+  gap:28px;
+}
+
+@media(max-width:860px){
+  .page-body{
+    grid-template-columns:1fr;
+  }
+}
+
+/* PANELS */
+
+.panel,
+.chart-panel,
+.table-panel,
+.result-card{
+  background:var(--white);
+  border-radius:12px;
+  border:1px solid var(--cream-dark);
+}
+
+.panel{
+  padding:26px;
+  margin-bottom:18px;
+}
+
+.panel-title{
+  font-family:'Fraunces',serif;
+  font-size:16px;
+  font-weight:700;
+  color:var(--navy);
+  margin-bottom:20px;
+  padding-bottom:14px;
+  border-bottom:1px solid var(--cream-dark);
+}
+
+/* INPUTS */
+
+.field{
+  margin-bottom:18px;
+}
+
+.field label{
+  display:block;
+  font-size:12px;
+  font-weight:700;
+  color:var(--navy);
+  margin-bottom:7px;
+}
+
+.input-wrap{
+  position:relative;
+}
+
+.input-prefix{
+  position:absolute;
+  left:13px;
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--muted);
+  font-size:14px;
+  font-weight:700;
+}
+
+.input-suffix{
+  position:absolute;
+  right:13px;
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--muted);
+  font-size:13px;
+  font-weight:700;
+}
+
+input,
+select{
+  width:100%;
+  padding:11px 14px;
+  border-radius:8px;
+  border:1.5px solid var(--cream-dark);
+  background:var(--cream);
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:14px;
+  font-weight:600;
+  color:var(--text);
+}
+
+input.has-prefix{
+  padding-left:28px;
+}
+
+input.has-suffix{
+  padding-right:34px;
+}
+
+input:focus,
+select:focus{
+  outline:none;
+  border-color:var(--amber);
+  background:var(--white);
+}
+
+/* HERO */
+
+.result-hero{
+  background:var(--navy);
+  border-radius:12px;
+  padding:28px;
+  margin-bottom:18px;
+}
+
+.result-hero-label{
+  font-size:10px;
+  letter-spacing:2px;
+  color:rgba(255,255,255,0.45);
+  text-transform:uppercase;
+}
+
+.result-hero-amount{
+  font-family:'Fraunces',serif;
+  font-size:clamp(38px,5vw,56px);
+  font-weight:900;
+  color:var(--amber);
+  margin-top:8px;
+  letter-spacing:-2px;
+}
+
+.result-hero-sub{
+  font-size:12px;
+  color:rgba(255,255,255,0.45);
+  margin-top:6px;
+}
+
+.hero-divider{
+  border:none;
+  border-top:1px solid rgba(255,255,255,0.08);
+  margin:20px 0;
+}
+
+.result-row{
+  display:flex;
+  justify-content:space-between;
+  padding:8px 0;
+}
+
+.result-row span:first-child{
+  color:rgba(255,255,255,0.55);
+  font-size:13px;
+}
+
+.result-row span:last-child{
+  color:var(--white);
+  font-size:13px;
+  font-weight:700;
+}
+
+/* CARDS */
+
+.result-cards{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-bottom:18px;
+}
+
+.result-card{
+  padding:18px;
+}
+
+.result-card-label{
+  font-size:11px;
+  color:var(--muted);
+}
+
+.result-card-value{
+  font-family:'Fraunces',serif;
+  font-size:24px;
+  color:var(--navy);
+  margin-top:6px;
+}
+
+.result-card-sub{
+  font-size:10px;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+/* CHART */
+
+.chart-panel{
+  padding:24px;
+  margin-bottom:18px;
+}
+
+.chart-title{
+  font-size:13px;
+  font-weight:700;
+  color:var(--navy);
+  margin-bottom:16px;
+}
+
+canvas{
+  width:100%;
+  height:320px;
+  display:block;
+}
+
+/* TABLE */
+
+.table-panel{
+  padding:24px;
+}
+
+.table-title{
+  font-size:13px;
+  font-weight:700;
+  color:var(--navy);
+  margin-bottom:16px;
+}
+
+.table-wrap{
+  overflow:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:12px;
+}
+
+th{
+  text-align:left;
+  padding:8px 10px;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:var(--muted);
+  border-bottom:1px solid var(--cream-dark);
+}
+
+td{
+  padding:10px;
+  border-bottom:1px solid var(--cream-dark);
+}
+
+/* DISCLAIMER */
+
+.disclaimer{
+  background:var(--cream-dark);
+  border-radius:10px;
+  padding:14px 16px;
+  display:flex;
+  gap:10px;
+  margin-bottom:18px;
+}
+
+.disclaimer p{
+  font-size:11px;
+  color:var(--muted);
+  line-height:1.7;
+}
+
+.disclaimer strong{
+  color:var(--text);
+}
+
+/* BLURB */
+
+.blurb{
+  background:var(--navy);
+  border-radius:12px;
+  padding:28px;
+  color:rgba(255,255,255,0.8);
+}
+
+.blurb h3{
+  font-family:'Fraunces',serif;
+  font-size:18px;
+  color:var(--white);
+  margin-bottom:14px;
+}
+
+.blurb p,
+.blurb li{
+  font-size:13px;
+  line-height:1.8;
+}
+
+.blurb ul{
+  padding-left:18px;
+  margin-top:10px;
+}
+
+.warning{
+  display:none;
+  margin-top:14px;
+  padding:12px;
+  border-radius:10px;
+  background:rgba(255,80,80,0.1);
+  color:#a94442;
+  font-size:12px;
+}
+
+</style>
+</head>
+
+<body>
+
+<nav>
+
+  <a href="../index.html" class="nav-logo">
+
+    <svg width="28" height="28" viewBox="0 0 34 34" fill="none">
+      <path d="M17 28L17 9" stroke="#E8A030" stroke-width="2" stroke-linecap="round"/>
+      <path d="M17 9L8 24L17 24Z" fill="rgba(232,160,48,0.7)"/>
+      <path d="M17 13L26 23L17 23Z" fill="rgba(255,255,255,0.15)"/>
+      <path d="M9 29Q17 27 25 29" stroke="#E8A030" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    </svg>
+
+    <span class="nav-logo-text">
+      Wind<span>fall</span>
+    </span>
+
+  </a>
+
+  <a href="../index.html#calculators" class="nav-back">
+    ← All Calculators
+  </a>
+
+</nav>
+
+<div class="page-header">
+
+  <p class="eyebrow">
+    Calculator · Savings
+  </p>
+
+  <h1>
+    Savings Calculator
+  </h1>
+
+  <p>
+    Estimate how your savings can grow with recurring deposits,
+    compound interest, and long-term investing.
+  </p>
+
+</div>
+
+<div class="page-body">
+
+  <!-- LEFT -->
+
+  <div>
+
+    <div class="panel">
+
+      <div class="panel-title">
+        Savings Inputs
+      </div>
+
+      <div class="field">
+        <label>Initial Deposit</label>
+
+        <div class="input-wrap">
+          <span class="input-prefix">$</span>
+          <input id="initial" class="has-prefix" type="number" value="10000">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Recurring Contribution</label>
+
+        <div class="input-wrap">
+          <span class="input-prefix">$</span>
+          <input id="contribution" class="has-prefix" type="number" value="500">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Contribution Frequency</label>
+
+        <select id="frequency">
+          <option value="12">Monthly</option>
+          <option value="26">Bi-Weekly</option>
+          <option value="52">Weekly</option>
+          <option value="1">Yearly</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Annual Interest Rate</label>
+
+        <div class="input-wrap">
+          <input id="rate" class="has-suffix" type="number" value="6">
+          <span class="input-suffix">%</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Compound Frequency</label>
+
+        <select id="compound">
+          <option value="12">Monthly</option>
+          <option value="4">Quarterly</option>
+          <option value="2">Semi-Annual</option>
+          <option value="1">Annually</option>
+          <option value="365">Daily</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Years to Grow</label>
+
+        <input id="years" type="number" value="25">
+      </div>
+
+      <div class="field">
+        <label>Expected Inflation Rate</label>
+
+        <div class="input-wrap">
+          <input id="inflation" class="has-suffix" type="number" value="2">
+          <span class="input-suffix">%</span>
+        </div>
+      </div>
+
+      <div class="warning" id="warning">
+        Years must be greater than zero.
+      </div>
+
+    </div>
+
+    <div class="disclaimer">
+
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8892A4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+
+      <p>
+        <strong>Not financial advice.</strong>
+        Results are estimates only and may vary based on inflation,
+        taxes, market conditions, and actual investment returns.
+      </p>
+
+    </div>
+
+    <div class="blurb">
+
+      <h3>
+        How compound growth works
+      </h3>
+
+      <p>
+        Compound growth means your savings earn returns on both your
+        original deposits and previously earned interest over time.
+      </p>
+
+      <ul>
+        <li>Consistent contributions matter more than timing</li>
+        <li>Longer time horizons dramatically increase growth</li>
+        <li>Inflation reduces future purchasing power</li>
+        <li>Higher rates increase long-term compounding</li>
+      </ul>
+
+    </div>
+
+  </div>
+
+  <!-- RIGHT -->
+
+  <div>
+
+    <div class="result-hero">
+
+      <div class="result-hero-label">
+        Projected Future Value
+      </div>
+
+      <div class="result-hero-amount" id="futureValue">
+        $0
+      </div>
+
+      <div class="result-hero-sub">
+        Estimated balance after compound growth
+      </div>
+
+      <hr class="hero-divider">
+
+      <div class="result-row">
+        <span>Total Contributions</span>
+        <span id="totalContributions">$0</span>
+      </div>
+
+      <div class="result-row">
+        <span>Total Interest Earned</span>
+        <span id="interestEarned">$0</span>
+      </div>
+
+      <div class="result-row">
+        <span>Inflation-Adjusted Value</span>
+        <span id="inflationAdjusted">$0</span>
+      </div>
+
+    </div>
+
+    <div class="result-cards">
+
+      <div class="result-card">
+
+        <div class="result-card-label">
+          Monthly Equivalent
+        </div>
+
+        <div class="result-card-value" id="monthlyEquivalent">
+          $0
+        </div>
+
+        <div class="result-card-sub">
+          Average monthly value growth
+        </div>
+
+      </div>
+
+      <div class="result-card">
+
+        <div class="result-card-label">
+          Growth Multiple
+        </div>
+
+        <div class="result-card-value" id="growthMultiple">
+          0×
+        </div>
+
+        <div class="result-card-sub">
+          Relative to contributions
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="chart-panel">
+
+      <div class="chart-title">
+        Savings Growth Over Time
+      </div>
+
+      <canvas id="chart"></canvas>
+
+    </div>
+
+    <div class="table-panel">
+
+      <div class="table-title">
+        Yearly Breakdown
+      </div>
+
+      <div class="table-wrap">
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>Balance</th>
+              <th>Contributions</th>
+              <th>Interest</th>
+            </tr>
+          </thead>
+
+          <tbody id="tableBody"></tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+window.addEventListener('DOMContentLoaded', () => {
+
+  const initialInput = document.getElementById('initial');
+  const contributionInput = document.getElementById('contribution');
+  const freqInput = document.getElementById('frequency');
+  const rateInput = document.getElementById('rate');
+  const compoundInput = document.getElementById('compound');
+  const yearsInput = document.getElementById('years');
+  const inflationInput = document.getElementById('inflation');
+
+  const futureValueEl = document.getElementById('futureValue');
+  const totalContributionsEl = document.getElementById('totalContributions');
+  const interestEarnedEl = document.getElementById('interestEarned');
+  const inflationAdjustedEl = document.getElementById('inflationAdjusted');
+  const monthlyEquivalentEl = document.getElementById('monthlyEquivalent');
+  const growthMultipleEl = document.getElementById('growthMultiple');
+
+  const warning = document.getElementById('warning');
+  const tableBody = document.getElementById('tableBody');
+
+  const chart = document.getElementById('chart');
+  const ctx = chart.getContext('2d');
+
+  function formatCurrency(value){
+
+    return new Intl.NumberFormat('en-CA',{
+      style:'currency',
+      currency:'CAD',
+      maximumFractionDigits:0
+    }).format(value);
+
+  }
+
+  function calculate(){
+
+    const initial =
+      parseFloat(initialInput.value) || 0;
+
+    const contribution =
+      parseFloat(contributionInput.value) || 0;
+
+    const frequency =
+      parseFloat(freqInput.value) || 12;
+
+    const annualRate =
+      (parseFloat(rateInput.value) || 0) / 100;
+
+    const compoundFreq =
+      parseFloat(compoundInput.value) || 12;
+
+    const years =
+      parseFloat(yearsInput.value) || 0;
+
+    const inflation =
+      (parseFloat(inflationInput.value) || 0) / 100;
+
+    if(years <= 0){
+
+      warning.style.display = 'block';
+      return;
+
+    }
+
+    warning.style.display = 'none';
+
+    let balance = initial;
+    let totalContributions = initial;
+
+    const periodicRate =
+      annualRate / compoundFreq;
+
+    const totalPeriods =
+      years * compoundFreq;
+
+    const contributionPerPeriod =
+      (contribution * frequency) / compoundFreq;
+
+    const yearlyData = [];
+
+    for(let i = 1; i <= totalPeriods; i++){
+
+      balance *= (1 + periodicRate);
+
+      balance += contributionPerPeriod;
+
+      totalContributions += contributionPerPeriod;
+
+      if(i % compoundFreq === 0){
+
+        yearlyData.push({
+          year:i / compoundFreq,
+          balance,
+          contributions:totalContributions,
+          interest:balance - totalContributions
+        });
+
+      }
+
+    }
+
+    const futureValue = balance;
+
+    const interestEarned =
+      futureValue - totalContributions;
+
+    const inflationAdjusted =
+      futureValue / Math.pow(1 + inflation, years);
+
+    futureValueEl.textContent =
+      formatCurrency(futureValue);
+
+    totalContributionsEl.textContent =
+      formatCurrency(totalContributions);
+
+    interestEarnedEl.textContent =
+      formatCurrency(interestEarned);
+
+    inflationAdjustedEl.textContent =
+      formatCurrency(inflationAdjusted);
+
+    monthlyEquivalentEl.textContent =
+      formatCurrency(futureValue / (years * 12));
+
+    growthMultipleEl.textContent =
+      (futureValue / totalContributions).toFixed(1) + '×';
+
+    renderTable(yearlyData);
+
+    drawChart(yearlyData);
+
+  }
+
+  function renderTable(data){
+
+    tableBody.innerHTML = '';
+
+    data.forEach(row => {
+
+      tableBody.innerHTML += `
+        <tr>
+          <td>${row.year}</td>
+          <td>${formatCurrency(row.balance)}</td>
+          <td>${formatCurrency(row.contributions)}</td>
+          <td>${formatCurrency(row.interest)}</td>
+        </tr>
+      `;
+
+    });
+
+  }
+
+  function drawChart(data){
+
+    const rect = chart.getBoundingClientRect();
+
+    chart.width = rect.width * 2;
+    chart.height = 320 * 2;
+
+    ctx.setTransform(1,0,0,1,0,0);
+
+    ctx.scale(2,2);
+
+    ctx.clearRect(0,0,chart.width,chart.height);
+
+    const width = rect.width;
+    const height = 320;
+
+    const padding = 40;
+
+    const maxValue =
+      Math.max(...data.map(d => d.balance));
+
+    /* AREA */
+
+    ctx.beginPath();
+
+    data.forEach((point,index) => {
+
+      const x =
+        padding +
+        ((width - padding * 2) / (data.length - 1)) * index;
+
+      const y =
+        height -
+        padding -
+        ((point.balance / maxValue) * (height - padding * 2));
+
+      if(index === 0){
+
+        ctx.moveTo(x,y);
+
+      } else {
+
+        ctx.lineTo(x,y);
+
+      }
+
+    });
+
+    ctx.lineTo(width - padding, height - padding);
+    ctx.lineTo(padding, height - padding);
+
+    ctx.closePath();
+
+    ctx.fillStyle = 'rgba(232,160,48,0.12)';
+    ctx.fill();
+
+    /* LINE */
+
+    ctx.beginPath();
+
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#E8A030';
+
+    data.forEach((point,index) => {
+
+      const x =
+        padding +
+        ((width - padding * 2) / (data.length - 1)) * index;
+
+      const y =
+        height -
+        padding -
+        ((point.balance / maxValue) * (height - padding * 2));
+
+      if(index === 0){
+
+        ctx.moveTo(x,y);
+
+      } else {
+
+        ctx.lineTo(x,y);
+
+      }
+
+    });
+
+    ctx.stroke();
+
+  }
+
+  [
+    initialInput,
+    contributionInput,
+    freqInput,
+    rateInput,
+    compoundInput,
+    yearsInput,
+    inflationInput
+  ].forEach(el => {
+
+    el.addEventListener('input', calculate);
+
+  });
+
+  window.addEventListener('resize', calculate);
+
+  calculate();
+
+});
+
+</script>
+
+</body>
+</html>
